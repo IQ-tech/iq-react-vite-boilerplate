@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "test": "jest --passWithNoTests",
     "test:watch": "jest --watch",
-    "test:staged": "jest --bail --silent --findRelatedTests",
+    "test:staged": "jest --bail --findRelatedTests --passWithNoTests",
     "prepare": "husky install"
   },
   "dependencies": {
@@ -17,6 +17,8 @@
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
+    "@commitlint/cli": "^17.0.3",
+    "@commitlint/config-conventional": "^17.0.3",
     "@testing-library/jest-dom": "^5.16.4",
     "@testing-library/react": "^13.3.0",
     "@types/jest": "^28.1.6",
