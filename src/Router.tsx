@@ -1,7 +1,7 @@
 import { Route, Routes } from 'react-router-dom'
 
 // Pages
-import { App } from './pages/App'
+import { App } from 'pages/App'
 
 export function Router() {
   return (
