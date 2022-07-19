@@ -1,0 +1,9 @@
+{
+  "*.{js,jsx,ts,tsx,css,scss,less,json}": [
+    "prettier --ignore-path ./.prettierignore --write"
+  ],
+  "*.{js,jsx,ts,tsx}": [
+    "eslint --fix --max-warnings=0",
+    "npm run test:staged"
+  ]
+}
