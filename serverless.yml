@@ -1,0 +1,42 @@
+service: boiler
+ 
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  stage: ${opt:stage, 'dev'}
+  region: us-east-1
+
+custom:
+  domainName: 'boiler.dev.iq.com.br'
+
+  name: ${self:provider.stage}-${self:service}
+  cloudFrontId: ${self:custom.name}-cloudfront
+  bucket: ${self:custom.name}-ui
+
+  s3Sync:
+  - bucketName: ${self:custom.bucket}
+    localDir: dist 
+
+  websiteDomain:
+    domain: ${self:custom.domainName}
+    cloudfrontOutputKey: 'CloudFrontDomainName'
+
+  customCertificate:
+    certificateName: ${self:custom.domainName}
+    hostedZoneNames: ${self:custom.domainName}.
+
+  cloudfrontInvalidate:
+    - distributionIdKey: 'CloudFrontDistributionId'
+      autoInvalidate: true
+      items: 
+        - "/index.html"
+
+plugins:
+  - serverless-s3-sync
+  - serverless-certificate-creator
+  - serverless-website-domain
+  - serverless-cloudfront-invalidate
+
+resources:
+  - ${file(./.serverless-resources/serverless_resources.yml)}

@@ -1,0 +1,81 @@
+Resources:
+
+  WebAppS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: ${self:custom.bucket}
+
+  WebAppS3BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket:
+        Ref: WebAppS3Bucket
+      PolicyDocument:
+        Statement:
+          - Action:
+              - s3:GetObject
+            Effect: Allow
+            Sid: PublicReadGetObject
+            Resource: arn:aws:s3:::${self:custom.bucket}/*
+            Principal:
+              AWS: 
+                Fn::Join:
+                  - ''
+                  -
+                    - 'arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity'
+                    - ' '
+                    - Ref: cloudfrontoriginaccessidentity
+
+  WebAppCloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Comment: ${self:custom.name}
+        PriceClass: PriceClass_100 # PriceClass_100 | PriceClass_200 | PriceClass_All
+        Origins:
+          - DomainName: ${self:custom.bucket}.s3.amazonaws.com
+            Id: ${self:custom.cloudFrontId}
+            S3OriginConfig:
+              OriginAccessIdentity:
+                Fn::Join:
+                  - ''
+                  -
+                    - 'origin-access-identity/cloudfront/'
+                    - Ref: cloudfrontoriginaccessidentity
+        Enabled: 'true'
+        Aliases:
+          - ${self:custom.domainName}
+        DefaultRootObject: index.html
+        CustomErrorResponses:
+          - ErrorCode: 404
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+        DefaultCacheBehavior:
+          CachePolicyId: '658327ea-f89d-4fab-a63d-7e88639e58f6'
+          AllowedMethods:
+            - GET
+            - HEAD
+          TargetOriginId: ${self:custom.cloudFrontId}
+          ForwardedValues:
+            QueryString: 'false'
+            Cookies:
+              Forward: none
+          ViewerProtocolPolicy: redirect-to-https
+        ViewerCertificate:
+          AcmCertificateArn: ${certificate(${self:custom.domainName}):CertificateArn}
+          MinimumProtocolVersion: 'TLSv1.2_2021'
+          SslSupportMethod: sni-only
+
+  cloudfrontoriginaccessidentity:
+    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+    Properties:
+      CloudFrontOriginAccessIdentityConfig:
+        Comment: ${self:custom.name}-oai
+
+Outputs:
+  CloudFrontDistributionId:
+      Value:
+        Ref: WebAppCloudFrontDistribution
+  CloudFrontDomainName:
+    Value:
+      'Fn::GetAtt': [ WebAppCloudFrontDistribution, DomainName ]
