@@ -1,0 +1,72 @@
+version: 2.1
+
+executors:
+  build-executor:
+    docker:
+      - image: cimg/node:16.16.0
+
+jobs:
+  build-and-deploy-development:
+    executor: build-executor
+
+    working_directory: ~/iq-react-vite-boilerplate #TODO: Alterar path do projeto
+    steps:
+      - add_ssh_keys:
+          fingerprints:
+            - '' #TODO: Vincular ssh key circle ci
+      - checkout:
+          path: ~/iq-react-vite-boilerplate #TODO: Alterar path do projeto
+      - run:
+          name: Install Dependencies
+          command: yarn install --ignore-engines --frozen-lockfile
+      - run:
+          name: Build Project
+          command: yarn build
+      - run:
+          name: AWS Create Certificate
+          command: serverless create-cert --stage dev
+      - run:
+          name: AWS Deploy
+          command: serverless deploy --stage dev
+
+  build-and-deploy-production:
+    executor: build-executor
+
+    working_directory: ~/iq-react-vite-boilerplate #TODO: Alterar path do projeto
+
+    steps:
+      - run: node --version
+      - add_ssh_keys:
+          fingerprints:
+            - '' #TODO: Vincular ssh key circle ci
+      - checkout:
+          path: ~/iq-react-vite-boilerplate #TODO: Alterar path do projeto
+      - run:
+          name: Install Dependencies
+          command: yarn install --ignore-engines --frozen-lockfile
+      - run:
+          name: Build Project
+          command: yarn build
+      - run:
+          name: AWS Create Certificate
+          command: npx serverless create-cert --stage prd
+      - run:
+          name: AWS Deploy
+          command: npx serverless deploy --stage prd
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - build-and-deploy-development:
+          context: iq
+          filters:
+            branches:
+              only: development
+      - build-and-deploy-production:
+          context: iq
+          filters:
+            tags:
+              only: /^v.*/ # build for all tags. Ex v1.2.3
+            branches:
+              ignore: /.*/ # ignore all branches just build tags
