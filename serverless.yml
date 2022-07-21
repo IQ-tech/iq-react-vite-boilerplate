@@ -8,8 +8,11 @@ provider:
   region: us-east-1
 
 custom:
-  domainName: 'boiler.dev.iq.com.br'
+  domains:
+    dev: 'boiler.dev.iq.com.br'
+    prd: 'boiler.iq.com.br'
 
+  domainName: ${self:custom.domains.${self:provider.stage}}
   name: ${self:provider.stage}-${self:service}
   cloudFrontId: ${self:custom.name}-cloudfront
   bucket: ${self:custom.name}-ui
