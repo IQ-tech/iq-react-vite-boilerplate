@@ -1,5 +1,5 @@
 service: boiler
- 
+
 frameworkVersion: '3'
 
 provider:
@@ -18,8 +18,8 @@ custom:
   bucket: ${self:custom.name}-ui
 
   s3Sync:
-  - bucketName: ${self:custom.bucket}
-    localDir: dist 
+    - bucketName: ${self:custom.bucket}
+      localDir: dist
 
   websiteDomain:
     domain: ${self:custom.domainName}
@@ -32,8 +32,8 @@ custom:
   cloudfrontInvalidate:
     - distributionIdKey: 'CloudFrontDistributionId'
       autoInvalidate: true
-      items: 
-        - "/index.html"
+      items:
+        - '/index.html'
 
 plugins:
   - serverless-s3-sync
@@ -42,4 +42,4 @@ plugins:
   - serverless-cloudfront-invalidate
 
 resources:
-  - ${file(./.serverless-resources/serverless_resources.yml)}
+  - ${file(./serverless-resources.yml)}
